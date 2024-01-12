@@ -3,7 +3,6 @@ import {SingleItem, Results} from '../interfaces/results';
 import LoadSpinner from './LoadSpinner';
 import APIUtils from '../utils/APIUtils';
 
-import {ReactComponent as EditIcon} from '../assets/img/icons/edit.svg';
 import {ReactComponent as DeleteIcon} from '../assets/img/icons/delete.svg';
 
 const Categories = (props: {

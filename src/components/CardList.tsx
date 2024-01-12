@@ -3,7 +3,7 @@ import {SingleItem, Results} from '../interfaces/results';
 import {Droppable, Draggable} from 'react-beautiful-dnd';
 import LoadSpinner from './LoadSpinner';
 import APIUtils from '../utils/APIUtils';
-
+import HelperUtils from '../utils/HelperUtils';
 import {ReactComponent as DeleteIcon} from '../assets/img/icons/delete.svg';
 
 const CardList = (props: {
@@ -14,13 +14,8 @@ const CardList = (props: {
   update: (id: string) => void,
   edit: (id: string) => void,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const retrieveColorHex = (catID: string) => {
-    let activeCat = props.cats.results.find((x) => x.id === catID);
-    return activeCat?.meta.color;
-  }
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const deleteTask = async (id: string) => {
     setIsDeleting(true);
@@ -59,6 +54,7 @@ const CardList = (props: {
           {
             !isLoading &&
             props.cards &&
+            props.cards.length > 0 &&
             props.cards.map((item: SingleItem, index: number) => {
               return(
                 <Draggable draggableId={item.id ? item.id : ''} index={index} key={item.id}>
@@ -68,9 +64,9 @@ const CardList = (props: {
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                       className="flex gap-2 group"
-                    >
+                      >
                       <div className="flex border bg-slate-200 rounded-md box-border p-2 w-full" onClick={() => props.edit(item.id as string)}>
-                        <div style={{backgroundColor: `${retrieveColorHex(item?.meta?.catID as string)}`}} className="w-2 h-auto bg-slate-400 rounded-md"></div>
+                        <div style={{backgroundColor: `${HelperUtils.retrieveColorHex(item?.meta?.catID as string, props.cats)}`}} className="w-2 h-auto bg-slate-400 rounded-md"></div>
                         <div className="self-center ml-2 w-full">
                           <h4 className="font-medium">{item.label}</h4>
                           <p className="text-sm text-slate-500">{item.description}</p>

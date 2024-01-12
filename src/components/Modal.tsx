@@ -10,68 +10,61 @@ const Modal = (props: {
   itemType: string,
   closeModal: () => void,
   cats: Results,
-  item: SingleItem,
+  editItem?: SingleItem,
   updateTasks: () => void,
   updateCats: () => void,
 }) => {
 
-  const defaultVals = {
-    id: '',
-    label: '',
-    description: null,
-    meta: {
-      catID: ''
-    }
-  }
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [newItem, setNewItem] = useState<SingleItem>(defaultVals);
-  const [isUpdate, setIsUpdate] = useState(false);
-
-  const updateField = (isMeta: boolean, key: string, value: string) => {
-    let category: any = {...newItem};
-    if (isMeta) {
-      category.meta[key] = value;
-    }
-    if (!isMeta) {
-      category[key] = value;
-    }
-    setNewItem(category);
-  }
-
-  const handleCloseModal = () => {
-    props.closeModal();
-  }
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [label, setLabel] = useState<string>('');
+  const [description, setDescription] = useState<string | null>(null);
+  const [catID, setCatID] = useState<string>('');
+  const [color, setColor] = useState<string>('');
 
   const handleSave = (type: string) => {
     setIsLoading(true);
-    if (isUpdate && props.itemType === 'Category') {
-      return updateCategory(type);
+
+    if (isEdit && props.itemType === 'Category') {
+      return updateCategory();
     }
-    if (isUpdate && props.itemType === 'Task') {
-      return updateTask(type);
+    if (isEdit && props.itemType === 'Task') {
+      return updateTask();
     }
-    createNewItem(type);
+    createNewItem();
   }
 
-  const createNewItem = async (type: string) => {
+  const createNewItem = async () => {
     let url;
-    let payload = newItem;
-    delete payload.id;
-
+    let payload;
     if (props.itemType === 'Category') {
-      delete payload.meta.catID;
+      payload = {
+        label: label,
+        description: description,
+        meta: {
+          color: color,
+        }
+      };
       url = 'https://task-api.learninbit.app/api/v1/tasks/categories/';
     }
 
     if (props.itemType === 'Task') {
-      payload = {...newItem};
-      payload.meta.status = "pending";
+      payload = {
+        label: label,
+        description: description,
+        meta: {
+          catID: catID,
+          status: 'pending',
+        }
+      };
       url = 'https://task-api.learninbit.app/api/v1/tasks/task/';
     }
-
-    let res = await APIUtils.callPost(url as string, payload);
-    // TODO: add error handling
+    
+    let res: any = await APIUtils.callPost(url as string, payload as any);
+    
+    if (res.detail) {
+      return console.error(res);
+    }
 
     if (props.itemType === 'Category') {
       props.updateCats();
@@ -84,21 +77,40 @@ const Modal = (props: {
     setIsLoading(false);
   }
 
-  const updateCategory = async (type: string) => {
-    delete newItem.id;
-
-    let res = await APIUtils.callPut(`https://task-api.learninbit.app/api/v1/tasks/categories/${props.item?.id}/`, newItem);
-    // TODO: add error handling
+  const updateCategory = async () => {
+    let payload = {
+      label: label,
+      description: description,
+      meta: {
+        color: color,
+      }
+    }
+    let res: any = await APIUtils.callPut(`https://task-api.learninbit.app/api/v1/tasks/categories/${props.editItem?.id}/`, payload);
+    
+    if (res.detail) {
+      return console.error(res);
+    }
 
     props.updateCats();
     props.closeModal();
     setIsLoading(false);
   }
 
-  const updateTask = async (type: string) => {
-    delete newItem.id;
+  const updateTask = async () => {
+    let payload = {
+      label: label,
+      description: description,
+      meta: {
+        catID: catID,
+        status: props.editItem?.meta.status
+      }
+    };
 
-    let res = await APIUtils.callPut(`https://task-api.learninbit.app/api/v1/tasks/task/${props.item?.id}/`, newItem);
+    let res: any = await APIUtils.callPut(`https://task-api.learninbit.app/api/v1/tasks/task/${props.editItem?.id}/`, payload);
+
+    if (res.detail) {
+      return console.error(res);
+    }
 
     props.updateTasks();
     props.closeModal();
@@ -106,38 +118,40 @@ const Modal = (props: {
   }
 
   useEffect(() => {
-    if (props.item) {
-      setNewItem(props.item);
-      setIsUpdate(true);
+    if (props.editItem) {
+      setLabel(props.editItem.label);
+      setDescription(props.editItem.description);
+      setCatID(props.editItem?.meta?.catID as string);
+      setColor(props.editItem?.meta?.color as string);
+      setIsEdit(true);
     }
-  }, [props.item]);
+  }, []);
 
   return (
     <>
     <div className="backdrop-blur-sm absolute top-0 left-0 right-0 bottom-0"></div>
     <div className="flex flex-col gap-2 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white box-border p-4 rounded-lg w-5/6 sm:w-1/2 md:w-1/3 lg:w-1/4">
       <h3>
-        {isUpdate ? 'Update ' : 'Add New '}
+        {props.editItem ? 'Update ' : 'Add New '}
         {props.itemType}
       </h3>
       {props.itemType === 'Task' && (
         <CategoryDropdown 
           placeholder={'Select A Category'}
           options={props.cats.results}
-          cats={props.cats}
-          selected={props.item?.meta.catID}
-          update={(item: SingleItem) => updateField(true, 'catID', item.id as string)}
+          selected={props.editItem?.meta?.catID}
+          updateField={(item: SingleItem) => setCatID(item.id as string)}
         />
       )}
       {props.itemType === 'Category' && (
         <ColorDropdown 
           placeholder={'Select A Color'}
-          selected={props.item?.meta.color}
-          update={(value: string) => updateField(true, 'color', value)}
+          selected={props.editItem?.meta?.color}
+          updateField={(value: string) => setColor(value)}
         />
       )}
-      <input className="border rounded-lg text-lg p-2 w-full" type="text" value={newItem.label} onChange={(e) => updateField(false, 'label', e.target.value)} placeholder="Label" />
-      <textarea className="border rounded-lg text-lg p-2 w-full" value={newItem.description ? newItem.description : ''} onChange={(e) => updateField(false, 'description', e.target.value)} placeholder="Description"></textarea>
+      <input className="border rounded-lg text-lg p-2 w-full" type="text" value={label ? label : ''} onChange={(e) => setLabel(e.target.value)} placeholder="Label" />
+      <textarea className="border rounded-lg text-lg p-2 w-full min-h-48" value={description ? description: ''} onChange={(e) => setDescription(e.target.value)} placeholder="Description"></textarea>
       <div className="flex flex-row-reverse gap-2 w-full">
         <button className="bg-black text-white rounded-lg p-4 py-2 w-full" onClick={() => handleSave(props.itemType)}>
           {isLoading && (
@@ -146,10 +160,10 @@ const Modal = (props: {
             </div>
           )}
           {!isLoading && (
-            isUpdate ? 'Save' : 'Create'
+            props.editItem ? 'Save' : 'Create'
           )}
         </button>
-        <button className="bg-slate-300 text-black rounded-lg px-4 py-2 w-full" onClick={() => handleCloseModal()}>Cancel</button>
+        <button className="bg-slate-300 text-black rounded-lg px-4 py-2 w-full" onClick={() =>  props.closeModal()}>Cancel</button>
       </div>
     </div>
     </>

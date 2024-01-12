@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import APIUtils from '../utils/APIUtils';
 import AuthUtils from '../utils/AuthUtils';
 
-import {SingleItem, Results} from '../interfaces/results';
+import {Results} from '../interfaces/results';
 
 import Header from './Header';
 import Categories from './Categories';
@@ -30,7 +30,7 @@ const Dashboard = () => {
     results: []
   });
 
-  const [editItem, setEditItem] = useState<SingleItem>();
+  const [editItem, setEditItem] = useState<any>(null);
 
   const fetchCats = async () => {
     let res: any = await APIUtils.callGet('https://task-api.learninbit.app/api/v1/tasks/categories/');
@@ -46,7 +46,7 @@ const Dashboard = () => {
 
   const updateCatList = (id: string) => {
     let updated = cats.results?.filter(x => {
-      return x.id != id;
+      return x.id !== id;
     });
     const newCats = {...cats}
     newCats.results = updated;
@@ -83,8 +83,8 @@ const Dashboard = () => {
   }
 
   const updateTaskList = (id: string) => {
-    let updated = cats.results?.filter(x => {
-      return x.id != id;
+    let updated = tasks.results?.filter(x => {
+      return x.id !== id;
     });
     const newTasks = {...tasks}
     newTasks.results = updated;
@@ -103,7 +103,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!showModal) {
-      setEditItem(undefined);
+      setEditItem(null);
     }
   }, [showModal]);
 
@@ -114,7 +114,7 @@ const Dashboard = () => {
           itemType={itemType}
           closeModal={() =>  setShowModal(false)}
           cats={cats}
-          item={editItem as SingleItem}
+          editItem={editItem}
           updateTasks={() => fetchTasks()}
           updateCats={() => fetchCats()}
         />
@@ -126,6 +126,8 @@ const Dashboard = () => {
       )}
       {!isLoading && (
         <>
+        <p className="box-border p-2 bg-amber-200 mb-2 max-w-[800px] m-auto rounded-sm">
+          <span className="font-bold">ATTN:</span> I started to implement drag and drop on the cards. It is functional upon moving a card to a different column, but the data structure is not ideal for reordering within each column. Visually, you can move them around on the front-end, but I am not saving them because it would quickly throttle the API.</p>
         <Header />
         <div className="flex flex-col-reverse md:flex-row gap-4 max-w-screen-xlg m-auto">
           <Tasks 

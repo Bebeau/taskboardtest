@@ -3,7 +3,7 @@ import {useState, useEffect} from 'react';
 const colorLabels = ['#386c50', '#7a601d', '#dab43d', '#9a4d1b', '#a0392c', '#5b4eac', '#2254c5'];
 
 const ColorDropdown = (props: {
-  update: (value: string) => void,
+  updateField: (value: string) => void,
   placeholder: string,
   selected?: string
 }) => {
@@ -14,7 +14,7 @@ const ColorDropdown = (props: {
   const handleOptionSelect = (value: string) => {
     setShowDropdown(false);
     setSelected(value);
-    props.update(value);
+    props.updateField(value);
   };
 
   const dropdownClasses = `

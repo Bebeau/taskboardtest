@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import APIUtils from '../utils/APIUtils';
 import NavUtils from '../utils/NavUtils';
+import LoadSpinner from './LoadSpinner';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -72,7 +73,7 @@ const Login = () => {
         </div>
         <div className="flex justify-end">
           <button onClick={() => login()} className="bg-black text-white rounded-lg px-4 py-2">
-            {isLoading ? '...' : 'Login'}
+            {isLoading ? <LoadSpinner /> : 'Login'}
           </button>
         </div>
       </div>

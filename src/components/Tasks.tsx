@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import APIUtils from '../utils/APIUtils';
-import {SingleItem, Results} from '../interfaces/results';
+import {Results} from '../interfaces/results';
 import {DragDropContext, DropResult} from 'react-beautiful-dnd';
 
 import CardList from './CardList';
@@ -14,8 +14,7 @@ const Tasks = (props: {
   update: (id: string) => void,
   edit: (id: string) => void,
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
+  
   const [filteredTasks, setFilteredTasks] = useState<any>({
     pending: [],
     active: [],
@@ -41,7 +40,7 @@ const Tasks = (props: {
     filtered.complete = complete;
 
     setFilteredTasks(filtered);
-  }
+  };
 
   const updateTask = async (id: string, status: string) => {
     let update = props.items.results.filter(x => { return x.id === id})[0];
@@ -119,7 +118,6 @@ const Tasks = (props: {
           )}
         </div>
       </div>
-      <p className="box-border p-2 bg-amber-200 mt-2">ATTN: I started to implement drag and drop on the cards. It is functional upon moving a card to a different column, but the data structure is not ideal for reordering within each column. Visually, you can move them around on the front-end, but I am not saving them because it would throttle the API.</p>
       <div className="flex flex-col md:flex-row items-start w-full gap-4 mt-4">
         <DragDropContext onDragEnd={onDragEnd}>
           <CardList 
